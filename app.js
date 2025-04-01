@@ -10,9 +10,10 @@ import cookieParser from "cookie-parser";
 const app = express();
 
 app.use(express.json());
-app.use(express.urlencoded( { extended: false }));
-app.use(cookieParser);
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
 
+// Define routes
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/subscriptions", subscriptionRouter);
@@ -23,12 +24,21 @@ app.get("/", (req, res) => {
   res.send("Welcome to the Subscription Tracker API!");
 });
 
-app.listen(PORT, async () => {
-  console.log(
-    `Subscription Tracker API is running on http://localhost:${PORT}`
-  );
+// Connect to the database first, then start the server
+const startServer = async () => {
+  try {
+    await connectToDatabase();
+    console.log("✅ Successfully connected to the database.");
 
-  await connectToDatabase();
-});
+    app.listen(PORT, () => {
+      console.log(`🚀 Subscription Tracker API is running on http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error("❌ Failed to connect to the database:", error);
+    process.exit(1); // Exit the process if the database connection fails
+  }
+};
+
+startServer();
 
 export default app;
